@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Vibe Coder's Engineering Bible</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #f0e040;
+    --accent2: #ff6b35;
+    --accent3: #4ecdc4;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --glow: rgba(240, 224, 64, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  .header {
+    padding: 80px 40px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.0;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .toc a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--glow);
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 40px 100px;
+  }
+
+  .section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-num {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 32px 0 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+
+  p {
+    color: #b8b8cc;
+    margin-bottom: 16px;
+    max-width: 680px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--surface), #16162a);
+  }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-size: 13px;
+    color: #c8c8e0;
+    position: relative;
+  }
+
+  .code-block .comment { color: var(--muted); font-style: italic; }
+  .code-block .keyword { color: var(--accent); }
+  .code-block .string { color: var(--accent3); }
+  .code-block .fn { color: var(--accent2); }
+
+  .principle {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin: 12px 0;
+    transition: border-color 0.2s;
+  }
+
+  .principle:hover { border-color: var(--accent3); }
+
+  .principle-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--border);
+    line-height: 1;
+    min-width: 40px;
+  }
+
+  .principle-body h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .principle-body p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(240,224,64,0.06), rgba(78,205,196,0.06));
+    border: 1px solid rgba(240,224,64,0.2);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .highlight-box p {
+    color: #d0d0e8;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .highlight-box strong {
+    color: var(--accent);
+  }
+
+  .roadmap {
+    position: relative;
+    padding-left: 30px;
+    margin: 28px 0;
+  }
+
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent3), transparent);
+  }
+
+  .roadmap-item {
+    position: relative;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .roadmap-item:hover {
+    border-color: var(--accent);
+  }
+
+  .roadmap-item h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .roadmap-item p {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .badge-beginner { background: rgba(78,205,196,0.15); color: var(--accent3); border: 1px solid rgba(78,205,196,0.3); }
+  .badge-mid { background: rgba(240,224,64,0.1); color: var(--accent); border: 1px solid rgba(240,224,64,0.3); }
+  .badge-advanced { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+
+  .cheatsheet {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin: 24px 0;
+    border: 1px solid var(--border);
+  }
+
+  .cheatsheet-cell {
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+
+  .cheatsheet-cell .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .cheatsheet-cell .value {
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .cheatsheet-cell.accent-cell {
+    background: rgba(240,224,64,0.05);
+  }
+
+  .cheatsheet-cell.accent-cell .value {
+    color: var(--accent);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .header, .main { padding-left: 20px; padding-right: 20px; }
+    .cheatsheet { grid-template-columns: 1fr; }
+    h1 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tag">Essential Guide · 2025</div>
+  <h1>The <span>Vibe Coder's</span><br>Engineering Bible</h1>
+  <p class="subtitle">You have the ideas. Here's the engineering knowledge to turn them into real, solid, scalable software — without losing the vibe.</p>
+  <nav class="toc">
+    <a href="#mindset">Mindset</a>
+    <a href="#structure">Code Structure</a>
+    <a href="#git">Git</a>
+    <a href="#data">Data & APIs</a>
+    <a href="#testing">Testing</a>
+    <a href="#security">Security</a>
+    <a href="#deploy">Deploy</a>
+    <a href="#roadmap">Your Roadmap</a>
+  </nav>
+</div>
+
+<div class="main">
+
+  <!-- Section 1 -->
+  <div class="section" id="mindset">
+    <span class="section-num">// 01</span>
+    <h2>The Vibe-to-Engineering Mindset Shift</h2>
+    <p>Vibe coding is real and valid — moving fast, shipping things, following your intuition. But to build <em>lasting</em> products, you need to pair instinct with a few key habits that engineers use to keep things from falling apart at scale.</p>
+
+    <div class="highlight-box">
+      <p><strong>The core shift:</strong> Engineering isn't about writing perfect code upfront. It's about making your code easy to <strong>read, change, and fix later</strong> — by you or anyone else. Every principle here serves that goal.</p>
+    </div>
+
+    <h3>The Three Laws of Good Code</h3>
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">📖</span>
+        <h4>Readable</h4>
+        <p>Code is read 10x more than it's written. Name things clearly. A future-you reading it in 3 months should instantly understand it.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔄</span>
+        <h4>Changeable</h4>
+        <p>Requirements always change. Good code is structured so you can modify one part without breaking five others.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔍</span>
+        <h4>Testable</h4>
+        <p>If you can write a test for your code, it means your logic is clean and isolated. Hard-to-test code = tangled code.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section" id="structure">
+    <span class="section-num">// 02</span>
+    <h2>Code Structure & Best Practices</h2>
+    <p>These aren't arbitrary rules — they're patterns that engineers discovered by debugging nightmare codebases at 2am.</p>
+
+    <div class="principle">
+      <div class="principle-num">01</div>
+      <div class="principle-body">
+        <h4>Single Responsibility Principle (SRP)</h4>
+        <p>Each function, file, or component should do ONE thing well. If you're describing what a function does and you use the word "and" — split it up.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">02</div>
+      <div class="principle-body">
+        <h4>DRY — Don't Repeat Yourself</h4>
+        <p>If you're copy-pasting code, extract it into a function. Duplicated code means bugs have to be fixed in multiple places. Every copy is a future problem.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">03</div>
+      <div class="principle-body">
+        <h4>Naming is Everything</h4>
+        <p>Use descriptive names. <code>getUserById()</code> beats <code>get()</code>. <code>isLoggedIn</code> beats <code>flag</code>. Good names are free documentation.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">04</div>
+      <div class="principle-body">
+        <h4>Small Functions, Deep Logic</h4>
+        <p>A function longer than ~20 lines is a warning sign. Break it into smaller pieces. Each piece should be so clear it almost doesn't need a comment.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">05</div>
+      <div class="principle-body">
+        <h4>Separation of Concerns</h4>
+        <p>Keep your UI, business logic, and data fetching in separate places. Mix them together and you get spaghetti that nobody wants to touch.</p>
+      </div>
+    </div>
+
+    <h3>Folder Structure (example)</h3>
+    <div class="code-block">
+<pre><span class="comment"># A clean project structure</span>
+my-app/
+  src/
+    <span class="keyword">components/</span>    <span class="comment"># UI pieces (dumb, just display)</span>
+    <span class="keyword">features/</span>      <span class="comment"># business logic per feature</span>
+    <span class="keyword">services/</span>      <span class="comment"># API calls, external stuff</span>
+    <span class="keyword">utils/</span>         <span class="comment"># tiny reusable helpers</span>
+    <span class="keyword">hooks/</span>         <span class="comment"># (React) reusable stateful logic</span>
+  tests/           <span class="comment"># your tests live here</span>
+  .env             <span class="comment"># secrets (never commit this!)</span>
+  README.md        <span class="comment"># how to run the project</span></pre>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="git">
+    <span class="section-num">// 03</span>
+    <h2>Git — Your Time Machine</h2>
+    <p>Git is how you save your work, collaborate, and never permanently break things. Even solo, it's essential.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">💾</span>
+        <h4>Commit Often</h4>
+        <p>Think of commits like save points in a game. Small, frequent commits = easier to undo mistakes. Commit every time something works.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌿</span>
+        <h4>Use Branches</h4>
+        <p>Never build new features directly on <code>main</code>. Create a branch, build the feature, then merge. This keeps main always working.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">✍️</span>
+        <h4>Write Good Messages</h4>
+        <p>"Fixed bug" is useless. "Fix: login fails when email has uppercase letters" — now that's useful. Be specific.</p>
+      </div>
+    </div>
+
+    <h3>Essential Git Commands</h3>
+    <div class="code-block">
+<pre><span class="comment"># The daily workflow</span>
+git status                     <span class="comment"># what changed?</span>
+git add .                      <span class="comment"># stage all changes</span>
+git commit -m <span class="string">"feat: add login"</span>  <span class="comment"># save with message</span>
+git push                       <span class="comment"># send to remote (GitHub)</span>
+
+<span class="comment"># Branching</span>
+git checkout -b feature/auth   <span class="comment"># new branch</span>
+git checkout main              <span class="comment"># back to main</span>
+git merge feature/auth         <span class="comment"># merge your work</span>
+
+<span class="comment"># Undo mistakes</span>
+git stash                      <span class="comment"># temporarily hide changes</span>
+git reset --soft HEAD~1        <span class="comment"># undo last commit (keeps changes)</span></pre>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>Commit Message Format:</strong> Use <strong>type: description</strong> — e.g. <code>feat:</code> new feature, <code>fix:</code> bug fix, <code>chore:</code> maintenance, <code>docs:</code> documentation. This makes your history readable at a glance.</p>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section" id="data">
+    <span class="section-num">// 04</span>
+    <h2>Data, APIs & Databases</h2>
+    <p>Most products are basically "get data → transform data → display data." Understanding this flow is half the battle.</p>
+
+    <h3>How an API Call Works</h3>
+    <div class="code-block">
+<pre><span class="comment"># Frontend asks → Backend answers → Database stores</span>
+
+Browser/App  <span class="keyword">──→</span>  Your API  <span class="keyword">──→</span>  Database
+             GET /users      SELECT * FROM users
+
+<span class="comment"># The 4 basic operations (CRUD)</span>
+POST   /users        <span class="comment"># Create  — add a user</span>
+GET    /users/:id    <span class="comment"># Read    — get a user</span>
+PATCH  /users/:id    <span class="comment"># Update  — change a user</span>
+DELETE /users/:id    <span class="comment"># Delete  — remove a user</span></pre>
+    </div>
+
+    <h3>Data Rules to Live By</h3>
+    <div class="principle">
+      <div class="principle-num">↯</div>
+      <div class="principle-body">
+        <h4>Never Trust User Input</h4>
+        <p>Always validate and sanitize what users send you. If your API expects a number, make sure it's actually a number before using it.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">↯</div>
+      <div class="principle-body">
+        <h4>Handle Loading, Error & Empty States</h4>
+        <p>Every fetch can fail. Show the user what's happening: a loader while fetching, an error if it fails, and an empty state if there's no data. Don't leave them guessing.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">↯</div>
+      <div class="principle-body">
+        <h4>Secrets Stay Server-Side</h4>
+        <p>API keys, database credentials, passwords — never put these in your frontend code. Use environment variables (.env) and keep them on the server.</p>
+      </div>
+    </div>
+
+    <h3>Choosing a Database</h3>
+    <div class="cheatsheet">
+      <div class="cheatsheet-cell">
+        <div class="label">Use SQL (Postgres, SQLite) when...</div>
+        <div class="value">You have structured, relational data. Users + orders + products.</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Use NoSQL (MongoDB, Firestore) when...</div>
+        <div class="value">Your data structure is flexible or document-like. Great for rapid prototyping.</div>
+      </div>
+      <div class="cheatsheet-cell">
+        <div class="label">Use Redis when...</div>
+        <div class="value">You need fast temporary storage. Sessions, caching, rate limits.</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Vibe coder default pick</div>
+        <div class="value">Supabase (Postgres + API + Auth, all-in-one) or Firebase (NoSQL, easy to start).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section" id="testing">
+    <span class="section-num">// 05</span>
+    <h2>Testing — Your Safety Net</h2>
+    <p>Tests aren't bureaucracy. They're the thing that lets you move fast <em>without breaking things</em>. Start small and build the habit.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">🧪</span>
+        <h4>Unit Tests</h4>
+        <p>Test individual functions in isolation. "Given input X, does this function return Y?" Fast, cheap, and the most important kind.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔗</span>
+        <h4>Integration Tests</h4>
+        <p>Test that multiple pieces work together. "Does the login flow actually create a session and redirect the user?"</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🖥️</span>
+        <h4>E2E Tests</h4>
+        <p>Simulate a real user clicking through your app. Tools like Playwright or Cypress do this. Great for critical paths like checkout.</p>
+      </div>
+    </div>
+
+    <h3>The Vibe Coder Testing Rule</h3>
+    <div class="highlight-box">
+      <p>You don't need 100% test coverage. <strong>Test the critical paths</strong> — the code that would be most painful to break. Login, payment, core data mutations. That's it to start. Add more as things break.</p>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section" id="security">
+    <span class="section-num">// 06</span>
+    <h2>Security Basics</h2>
+    <p>You don't need to be a security expert, but you do need to avoid the obvious mistakes that expose your users.</p>
+
+    <div class="cheatsheet">
+      <div class="cheatsheet-cell">
+        <div class="label">Never do this</div>
+        <div class="value">Store passwords in plain text</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Do this instead</div>
+        <div class="value">Hash with bcrypt or argon2. Or use Auth0, Supabase Auth, Clerk.</div>
+      </div>
+      <div class="cheatsheet-cell">
+        <div class="label">Never do this</div>
+        <div class="value">Build raw SQL strings from user input</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Do this instead</div>
+        <div class="value">Use parameterized queries or an ORM. Prevents SQL injection.</div>
+      </div>
+      <div class="cheatsheet-cell">
+        <div class="label">Never do this</div>
+        <div class="value">Hardcode secrets in your code</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Do this instead</div>
+        <div class="value">Use .env files. Add .env to .gitignore immediately.</div>
+      </div>
+      <div class="cheatsheet-cell">
+        <div class="label">Never do this</div>
+        <div class="value">Trust the frontend to enforce authorization</div>
+      </div>
+      <div class="cheatsheet-cell accent-cell">
+        <div class="label">Do this instead</div>
+        <div class="value">Always check permissions on the server. Never just hide UI elements.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7 -->
+  <div class="section" id="deploy">
+    <span class="section-num">// 07</span>
+    <h2>Shipping & Deployment</h2>
+    <p>Getting your app live doesn't have to be complex. The modern stack has made this incredibly easy.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h4>Vercel / Netlify</h4>
+        <p>Best for frontend and full-stack JS apps. Connect your GitHub, push code, it deploys. Preview URLs for every branch. Free tier is generous.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🚂</span>
+        <h4>Railway / Render</h4>
+        <p>Great for backends, APIs, and databases. More control than Vercel, still easy. Good for Node, Python, any language.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">☁️</span>
+        <h4>AWS / GCP / Azure</h4>
+        <p>More complexity, more power. Use when you need fine-grained control or specific cloud services. Usually overkill early on.</p>
+      </div>
+    </div>
+
+    <h3>Environment Strategy</h3>
+    <div class="code-block">
+<pre><span class="comment"># Three environments, one mindset</span>
+
+<span class="keyword">development</span>   <span class="comment"># your local machine — break things here</span>
+<span class="keyword">staging</span>       <span class="comment"># a copy of production — test here before launch</span>
+<span class="keyword">production</span>    <span class="comment"># real users are here — treat with respect</span>
+
+<span class="comment"># Rule: Never test in production.</span>
+<span class="comment"># Rule: Staging should mirror production exactly.</span></pre>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>CI/CD (Continuous Integration/Deployment):</strong> Set up automatic deploys on push to main. GitHub Actions or Vercel's built-in CI can run your tests before deploying. If tests fail, the deploy doesn't happen. <strong>This is your safety net on autopilot.</strong></p>
+    </div>
+  </div>
+
+  <!-- Section 8 -->
+  <div class="section" id="roadmap">
+    <span class="section-num">// 08</span>
+    <h2>Your Learning Roadmap</h2>
+    <p>Don't try to learn everything at once. Here's a sequence that builds naturally on itself.</p>
+
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <h4>Phase 1: Foundations <span class="badge badge-beginner">Start Here</span></h4>
+        <p>HTML/CSS/JS basics. How the browser works. What happens when you type a URL. Git fundamentals. Build and ship one thing.</p>
+      </div>
+      <div class="roadmap-item">
+        <h4>Phase 2: A Real Stack <span class="badge badge-beginner">Weeks 2–6</span></h4>
+        <p>Pick one framework (React, Vue, or Next.js). Learn component thinking. Connect to a real API. Use Supabase or Firebase for your backend.</p>
+      </div>
+      <div class="roadmap-item">
+        <h4>Phase 3: Good Habits <span class="badge badge-mid">Month 2</span></h4>
+        <p>Refactor one of your projects applying SRP and DRY. Add your first unit tests. Write a proper README. Use environment variables properly.</p>
+      </div>
+      <div class="roadmap-item">
+        <h4>Phase 4: Architecture <span class="badge badge-mid">Month 3–4</span></h4>
+        <p>Learn about system design basics. Understand REST vs GraphQL. Learn about caching. Study one real open source project's structure.</p>
+      </div>
+      <div class="roadmap-item">
+        <h4>Phase 5: Advanced Engineering <span class="badge badge-advanced">Ongoing</span></h4>
+        <p>Performance optimization. Observability (logging, monitoring). Database design & indexing. CI/CD pipelines. Security auditing. Scalability patterns.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>The vibe coder's edge:</strong> You already know how to ship and iterate fast. Engineering principles don't slow that down — they make sure what you ship <strong>keeps working</strong> as it grows. Add one new principle per project and you'll compound quickly.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
